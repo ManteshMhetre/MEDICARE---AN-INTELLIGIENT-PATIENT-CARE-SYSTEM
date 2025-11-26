@@ -10,8 +10,6 @@ A robust healthcare platform facilitating real-time video consultations between 
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
-- [Screenshots](#screenshots)
-- [License](#license)
 - [Contact](#contact)
 
 ---
