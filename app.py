@@ -10,13 +10,18 @@ import markdown2
 import re
 from groq import Groq
 from google import genai
+import os
+from dotenv import load_dotenv
 
 # === Configuration & Initialization ===
 
-# API Keys (hard-coded into the code)
-GENAI_API_KEY = "AIzaSyD54ejbjVIVa-F3aD_Urnp8m1EFLUGR__I"
-GROQ_API_KEY = "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"
-FLASK_SECRET_KEY = "supersecretkey"
+# Load environment variables
+load_dotenv()
+
+# API Keys from environment variables
+GENAI_API_KEY = os.getenv("GENAI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "supersecretkey")
 
 # Configure Gemini
 genai_client = genai.Client(api_key=GENAI_API_KEY)

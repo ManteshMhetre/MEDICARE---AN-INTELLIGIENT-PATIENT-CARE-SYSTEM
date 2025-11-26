@@ -18,9 +18,9 @@ load_dotenv()
 
 app = Flask(_name_)
 
-# Configure API keys
-GROQ_API_KEY = os.getenv('GROQ_API_KEY', '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')
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyA3joMQMnael_heUCwpNvoRznCUiU3avf4')
+# Configure API keys from environment variables only
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # Initialize clients
 groq_client = Groq(api_key=GROQ_API_KEY)
@@ -35,11 +35,11 @@ scheduler.start()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(_name_)
 
-# Add back the Twilio configuration
-ACCOUNT_SID = 'AC490e071f8d01bf0df2f03d086c788d87'
-AUTH_TOKEN = '224b23b950ad5a4052aba15893fdf083'
-TWILIO_FROM = 'whatsapp:+14155238886'
-PATIENT_PHONE = 'whatsapp:+917559355282'
+# Twilio configuration from environment variables
+ACCOUNT_SID = os.getenv('TWILIO_WHATSAPP_ACCOUNT_SID')
+AUTH_TOKEN = os.getenv('TWILIO_WHATSAPP_AUTH_TOKEN')
+TWILIO_FROM = os.getenv('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+PATIENT_PHONE = os.getenv('TWILIO_PATIENT_PHONE', 'whatsapp:+917559355282')
 
 # Initialize Twilio client
 twilio_client = Client(ACCOUNT_SID, AUTH_TOKEN)

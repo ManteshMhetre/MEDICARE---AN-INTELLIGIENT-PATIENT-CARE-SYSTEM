@@ -3,8 +3,13 @@ import pandas as pd
 from datetime import datetime, time  # Import time here as well
 from apscheduler.schedulers.background import BackgroundScheduler
 from twilio.rest import Client
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+
+# Load environment variables
+load_dotenv()
 
 # -------------------------------
 # Load the three Excel files
@@ -17,11 +22,11 @@ df_activity = pd.read_excel('commodity2.xlsx')  # Columns: Time, Activity, Durat
 # -------------------------------
 # Twilio Credentials & Settings
 # -------------------------------
-PATIENT_PHONE = 'whatsapp:+917559355282'
+PATIENT_PHONE = os.getenv('TWILIO_PATIENT_PHONE', 'whatsapp:+917559355282')
 DEFAULT_LOCATION = (18.5204, 73.8567)  # Example coordinates (unused now)
-ACCOUNT_SID = 'AC490e071f8d01bf0df2f03d086c788d87'
-AUTH_TOKEN = '224b23b950ad5a4052aba15893fdf083'
-TWILIO_FROM = 'whatsapp:+14155238886'
+ACCOUNT_SID = os.getenv('TWILIO_WHATSAPP_ACCOUNT_SID')
+AUTH_TOKEN = os.getenv('TWILIO_WHATSAPP_AUTH_TOKEN')
+TWILIO_FROM = os.getenv('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
 
 def send_whatsapp_message(message, location=DEFAULT_LOCATION):
     """

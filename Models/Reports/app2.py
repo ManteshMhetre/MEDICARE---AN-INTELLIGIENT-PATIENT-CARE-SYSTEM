@@ -9,14 +9,18 @@ import markdown2
 import re  
 from groq import Groq
 from pinecone import Pinecone, ServerlessSpec
+from dotenv import load_dotenv
 
-genai.configure(api_key="AIzaSyA3joMQMnael_heUCwpNvoRznCUiU3avf4")
-GROQ_API_KEY = "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"
-PINECONE_API_KEY = "pcsk_45FE9b_Tfu3NVkFqAwBT2qQBvEeVA36ab8HJXpq2VgDWyWnP4o2WWakAi5yDiEitMiexKu"
+# Load environment variables
+load_dotenv()
+
+genai.configure(api_key=os.getenv("GENAI_API_KEY"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 INDEX_NAME = "cavistahack"
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecretkey")  
 
 pc = Pinecone(api_key=PINECONE_API_KEY)
 
