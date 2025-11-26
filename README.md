@@ -130,12 +130,6 @@ All AI model development, configuration, and deployment are the core technical c
 
 ---
 
-## License
-
-Distributed under the MIT License. See [LICENSE](LICENSE) for details.
-
----
-
 ## Contact
 
 **Mantesh Mhetre**  
