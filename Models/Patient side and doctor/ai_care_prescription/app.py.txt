@@ -1,0 +1,365 @@
+import os
+import json
+import logging
+import tempfile
+import re
+from dotenv import load_dotenv
+from flask import Flask, request, jsonify, render_template, send_file
+from groq import Groq
+import google.generativeai as genai
+import pandas as pd
+from datetime import datetime, time
+from apscheduler.schedulers.background import BackgroundScheduler
+from twilio.rest import Client
+import io
+
+# Load environment variables
+load_dotenv()
+
+app = Flask(_name_)
+
+# Configure API keys
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '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')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyA3joMQMnael_heUCwpNvoRznCUiU3avf4')
+
+# Initialize clients
+groq_client = Groq(api_key=GROQ_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
+MODEL_NAME = "gemini-1.5-flash"
+
+# Initialize scheduler
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+# Logger setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(_name_)
+
+# Add back the Twilio configuration
+ACCOUNT_SID = 'AC490e071f8d01bf0df2f03d086c788d87'
+AUTH_TOKEN = '224b23b950ad5a4052aba15893fdf083'
+TWILIO_FROM = 'whatsapp:+14155238886'
+PATIENT_PHONE = 'whatsapp:+917559355282'
+
+# Initialize Twilio client
+twilio_client = Client(ACCOUNT_SID, AUTH_TOKEN)
+
+def send_whatsapp_message(message):
+    """Send WhatsApp notification"""
+    try:
+        msg = twilio_client.messages.create(
+            from_=TWILIO_FROM,
+            body=message,
+            to=PATIENT_PHONE
+        )
+        logger.info(f"WhatsApp notification sent: {msg.sid}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send WhatsApp notification: {str(e)}")
+        return False
+
+def schedule_notifications(schedule_data):
+    """Schedule notifications for all activities"""
+    try:
+        # Clear existing jobs
+        scheduler.remove_all_jobs()
+
+        # Schedule medication notifications
+        for item in schedule_data.get('medication_schedule', []):
+            time_str = item['Scheduled Time']
+            time_obj = datetime.strptime(time_str, '%I:%M %p')
+            message = (f"🔔 Medication Reminder\n"
+                      f"Time: {time_str}\n"
+                      f"Meal: {item['Meal']}\n"
+                      f"Medication: {item['Medication Name']}\n"
+                      f"Dosage: {item.get('Dosage', 'As prescribed')}")
+            
+            scheduler.add_job(
+                send_whatsapp_message,
+                'cron',
+                args=[message],
+                hour=time_obj.hour,
+                minute=time_obj.minute,
+                id=f"med_{item['Medication Name']}_{time_str}"
+            )
+
+        # Schedule meal notifications
+        for item in schedule_data.get('meal_schedule', []):
+            time_str = item['Time']
+            time_obj = datetime.strptime(time_str, '%I:%M %p')
+            message = (f"🍽 Meal Reminder\n"
+                      f"Time: {time_str}\n"
+                      f"Meal: {item['Meal']}\n"
+                      f"Details: {item.get('Details', '')}")
+            
+            scheduler.add_job(
+                send_whatsapp_message,
+                'cron',
+                args=[message],
+                hour=time_obj.hour,
+                minute=time_obj.minute,
+                id=f"meal_{item['Meal']}_{time_str}"
+            )
+
+        # Schedule activity notifications
+        for item in schedule_data.get('activity_schedule', []):
+            time_str = item['Time']
+            time_obj = datetime.strptime(time_str, '%I:%M %p')
+            message = (f"🏃 Activity Reminder\n"
+                      f"Time: {time_str}\n"
+                      f"Activity: {item['Activity']}\n"
+                      f"Duration: {item.get('Duration', '')}\n"
+                      f"Notes: {item.get('Notes', '')}")
+            
+            scheduler.add_job(
+                send_whatsapp_message,
+                'cron',
+                args=[message],
+                hour=time_obj.hour,
+                minute=time_obj.minute,
+                id=f"activity_{item['Activity']}_{time_str}"
+            )
+
+        return True
+    except Exception as e:
+        logger.error(f"Failed to schedule notifications: {str(e)}")
+        return False
+
+# ✅ Function to Extract JSON from Response
+def extract_json(text):
+    json_match = re.search(r'\{.*\}', text, re.DOTALL)
+    if json_match:
+        return json_match.group(0)
+    return None
+
+# ✅ Function to Transcribe Audio Using Groq
+def transcribe_audio(audio_file):
+    try:
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, "temp_audio.mp3")
+        audio_file.save(temp_path)
+
+        # Transcribe audio
+        with open(temp_path, "rb") as file:
+            transcription = groq_client.audio.transcriptions.create(
+                file=(temp_path, file.read()),
+                model="whisper-large-v3-turbo",
+                response_format="json",
+                language="en",
+                temperature=0.0
+            )
+
+        # Cleanup temporary files
+        os.remove(temp_path)
+        os.rmdir(temp_dir)
+
+        logger.info(f"Transcription successful: {transcription.text[:100]}...")
+        return transcription.text
+
+    except Exception as e:
+        logger.error(f"Transcription error: {str(e)}")
+        return None
+
+# ✅ Function to Generate Care Plan Using Gemini
+def generate_care_plan(conversation_text):
+    try:
+        model = genai.GenerativeModel(MODEL_NAME)
+        prompt = f"""
+            Based on the following conversation transcript between a doctor and a patient, generate a structured care plan in *valid JSON format*.
+            
+            *JSON Format:*
+            {{
+                "medication_schedule": [{{"Medication Name": ""}}],
+                "meal_schedule": [{{"Time": "", "Meal": "", "Details": ""}}],
+                "activity_schedule": [{{"Time": "", "Activity": "", "Duration": "", "Notes": ""}}]
+            }}
+
+            *Fixed Meal Times:*
+            - Breakfast: 7:00 AM
+            - Snack: 10:00 AM
+            - Lunch: 1:00 PM
+            - Snack: 5:00 PM
+            - Dinner: 8:00 PM
+
+            Ensure medications align with meals. Adjust exercise based on health conditions.
+
+            *Conversation Transcript:*
+            {conversation_text}
+
+            *Output Strictly JSON. Do NOT add explanations or extra text.*
+        """
+
+        response = model.generate_content(prompt)
+        raw_response = response.text
+        logger.info(f"Raw Gemini Response: {raw_response[:100]}...")
+
+        json_text = extract_json(raw_response)
+        if json_text:
+            return json.loads(json_text)
+
+        logger.error("No valid JSON found in response.")
+        return create_default_care_plan()
+
+    except Exception as e:
+        logger.error(f"Care plan generation error: {str(e)}")
+        return create_default_care_plan()
+
+# ✅ Function to Create a Default Care Plan (Fallback)
+def create_default_care_plan():
+    return {
+        "medication_schedule": [],
+        "meal_schedule": [
+            {"Time": "7:00 AM", "Meal": "Breakfast", "Details": ""},
+            {"Time": "1:00 PM", "Meal": "Lunch", "Details": ""},
+            {"Time": "8:00 PM", "Meal": "Dinner", "Details": ""}
+        ],
+        "activity_schedule": []
+    }
+
+# ✅ Route: Homepage
+@app.route('/')
+def index():
+    return render_template('index3.html')
+
+# ✅ Route: Generate Care Plan
+@app.route("/generate_care_plan", methods=["POST"])
+def generate_care_plan_route():
+    try:
+        if 'audio' not in request.files:
+            return jsonify({"error": "No audio file provided"}), 400
+        
+        audio_file = request.files['audio']
+        if not audio_file:
+            return jsonify({"error": "Empty audio file"}), 400
+
+        transcript = transcribe_audio(audio_file)
+        if not transcript:
+            return jsonify({"error": "Transcription failed"}), 500
+
+        care_plan = generate_care_plan(transcript)
+        return jsonify(care_plan)
+
+    except Exception as e:
+        logger.error(f"Error in generate_care_plan_route: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# ✅ Route: Generate Medication Schedule
+@app.route('/generate_schedule', methods=['POST'])
+def generate_schedule():
+    try:
+        data = request.get_json()
+        medicines = data.get("medicines", [])
+        schedule_list = []
+
+        meal_times = {
+            3: [("Breakfast", "7:00 AM"), ("Lunch", "1:00 PM"), ("Dinner", "8:00 PM")],
+            2: [("Breakfast", "7:00 AM"), ("Dinner", "8:00 PM")],
+            1: [("Dinner", "8:00 PM")]
+        }
+
+        for med in medicines:
+            medication_name = med.get("medication_name", "")
+            frequency = int(med.get("frequency", 1))
+            dosage = med.get("dosage", "")
+
+            for meal, time in meal_times.get(frequency, []):
+                schedule_list.append({
+                    "Medication Name": medication_name,
+                    "Dosage": dosage,
+                    "Meal": meal,
+                    "Scheduled Time": time
+                })
+
+        # Schedule notifications
+        schedule_data = {
+            'medication_schedule': schedule_list,
+            'meal_schedule': data.get('meal_schedule', []),
+            'activity_schedule': data.get('activity_schedule', [])
+        }
+        notifications_scheduled = schedule_notifications(schedule_data)
+
+        return jsonify({
+            "schedule_list": schedule_list,
+            "notifications_scheduled": notifications_scheduled
+        })
+
+    except Exception as e:
+        logger.error(f"Schedule generation error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/download_schedule', methods=['POST'])
+def download_schedule():
+    try:
+        data = request.json
+        
+        # Create Excel writer object
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            workbook = writer.book
+
+            # Convert medication schedule to DataFrame and write to Excel
+            if data.get('medication_schedule'):
+                med_df = pd.DataFrame(data['medication_schedule'])
+                med_df = med_df.sort_values('Time') if 'Time' in med_df.columns else med_df
+                med_df.to_excel(writer, sheet_name='Medication Schedule', index=False)
+                
+                worksheet = writer.sheets['Medication Schedule']
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#3498db',
+                    'font_color': 'white'
+                })
+                
+                for col_num, value in enumerate(med_df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                    worksheet.set_column(col_num, col_num, 15)  # Set column width
+
+            # Write meal schedule
+            if data.get('meal_schedule'):
+                meal_df = pd.DataFrame(data['meal_schedule'])
+                meal_df = meal_df.sort_values('Time')
+                meal_df.to_excel(writer, sheet_name='Meal Schedule', index=False)
+                
+                worksheet = writer.sheets['Meal Schedule']
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#2ecc71',
+                    'font_color': 'white'
+                })
+                
+                for col_num, value in enumerate(meal_df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                    worksheet.set_column(col_num, col_num, 15)
+
+            # Write activity schedule
+            if data.get('activity_schedule'):
+                activity_df = pd.DataFrame(data['activity_schedule'])
+                activity_df = activity_df.sort_values('Time')
+                activity_df.to_excel(writer, sheet_name='Activity Schedule', index=False)
+                
+                worksheet = writer.sheets['Activity Schedule']
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#e74c3c',
+                    'font_color': 'white'
+                })
+                
+                for col_num, value in enumerate(activity_df.columns.values):
+                    worksheet.write(0, col_num, value, header_format)
+                    worksheet.set_column(col_num, col_num, 15)
+
+        output.seek(0)
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='daily_schedule.xlsx'
+        )
+
+    except Exception as e:
+        logger.error(f"Error generating Excel file: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# ✅ Run Flask App
+if _name_ == '_main_':
+    app.run(debug=True, threaded=True)

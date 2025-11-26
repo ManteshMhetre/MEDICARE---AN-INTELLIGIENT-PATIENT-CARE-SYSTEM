@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stress Level Prediction</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #d0e7ff, #f0faff);
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .card-blue {
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin: auto;
+      max-width: 500px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-blue:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+    }
+    .heading {
+      text-align: center;
+      color: #1e90ff;
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .form-group label {
+      font-weight: 600;
+      color: #333;
+    }
+    .form-control {
+      border-radius: 5px;
+      border: 2px solid #1e90ff;
+      transition: border-color 0.3s;
+    }
+    .form-control:focus {
+      border-color: #4682b4;
+      box-shadow: 0 0 10px rgba(30, 144, 255, 0.5);
+    }
+    .btn-custom {
+      background-color: #1e90ff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: background-color 0.3s, transform 0.3s;
+      width: 100%;
+    }
+    .btn-custom:hover {
+      background-color: #4682b4;
+      transform: scale(1.02);
+    }
+    .result {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1e90ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card-blue">
+      <div class="heading">Stress Level Predictor</div>
+      <form method="POST" action="/">
+        <div class="form-group">
+          <label for="gender">Gender</label>
+          <select class="form-control" id="gender" name="gender" required>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="age">Age</label>
+          <input type="number" class="form-control" id="age" name="age" min="0" required />
+        </div>
+        <div class="form-group">
+          <label for="heart_rate">Heart Rate</label>
+          <input type="number" class="form-control" id="heart_rate" name="heart_rate" min="0" required />
+        </div>
+        <div class="form-group">
+          <label for="sleep_hours">Sleep Hours</label>
+          <input type="number" class="form-control" id="sleep_hours" name="sleep_hours" min="0" required />
+        </div>
+        <button type="submit" class="btn-custom">Predict Stress Level</button>
+      </form>
+      {% if prediction %}
+      <div class="result">
+        Predicted Stress Level: {{ prediction }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <!-- jQuery and Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

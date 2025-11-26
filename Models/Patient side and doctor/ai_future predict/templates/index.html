@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Disease Risk Prediction</title>
+  <style>
+    /* styles.css */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  padding: 0;
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+fieldset {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  background: #fafafa;
+}
+
+legend {
+  font-weight: bold;
+  padding: 0 10px;
+}
+
+label {
+  display: inline-block;
+  width: 250px;
+  margin-bottom: 10px;
+  vertical-align: top;
+}
+
+input[type="number"],
+input[type="text"] {
+  width: calc(100% - 260px);
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input[type="submit"] {
+  background-color: #4285f4;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type="submit"]:hover {
+  background-color: #357ae8;
+}
+
+.results {
+  background: #e9f5e9;
+  border: 1px solid #c3e6c3;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.results h2 {
+  margin-top: 0;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  margin-bottom: 10px;
+}
+
+  </style>
+</head>
+<body>
+  <h1>Disease Risk Prediction</h1>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul style="color: red;">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST">
+    <!-- General / Heart Disease Information -->
+    <fieldset>
+      <legend>General &amp; Heart Disease Parameters</legend>
+      <label for="Age">Age:</label>
+      <input type="number" name="Age" id="Age" value="55" required><br>
+      <label for="Sex">Sex (1=Male, 0=Female):</label>
+      <input type="number" name="Sex" id="Sex" value="1" min="0" max="1" required><br>
+      <label for="cp">Chest Pain Type (cp):</label>
+      <input type="number" name="cp" id="cp" value="0"><br>
+      <label for="BP">Blood Pressure (BP):</label>
+      <input type="number" name="BP" id="BP" value="130"><br>
+      <label for="Cholesterol">Cholesterol:</label>
+      <input type="number" name="Cholesterol" id="Cholesterol" value="200"><br>
+      <label for="FBS">Fasting Blood Sugar (FBS):</label>
+      <input type="number" name="FBS" id="FBS" value="0"><br>
+      <label for="EKG">EKG:</label>
+      <input type="number" name="EKG" id="EKG" value="0"><br>
+      <label for="MaxHR">Max Heart Rate (MaxHR):</label>
+      <input type="number" name="MaxHR" id="MaxHR" value="150"><br>
+      <label for="ExerciseAngina">Exercise Angina (1=Yes,0=No):</label>
+      <input type="number" name="ExerciseAngina" id="ExerciseAngina" value="0" min="0" max="1"><br>
+      <label for="STdepression">ST Depression:</label>
+      <input type="number" step="0.1" name="STdepression" id="STdepression" value="0.0"><br>
+      <label for="STslope">ST Slope:</label>
+      <input type="number" name="STslope" id="STslope" value="0"><br>
+      <label for="Vessels">Number of Vessels:</label>
+      <input type="number" name="Vessels" id="Vessels" value="0"><br>
+      <label for="Thallium">Thallium:</label>
+      <input type="number" name="Thallium" id="Thallium" value="2">
+    </fieldset>
+
+    <!-- Diabetes Parameters -->
+    <fieldset>
+      <legend>Diabetes Parameters</legend>
+      <label for="Polyuria">Polyuria (1=Yes,0=No):</label>
+      <input type="number" name="Polyuria" id="Polyuria" value="0" min="0" max="1"><br>
+      <label for="Polydipsia">Polydipsia (1=Yes,0=No):</label>
+      <input type="number" name="Polydipsia" id="Polydipsia" value="0" min="0" max="1"><br>
+      <label for="Gender">Gender (Male/Female):</label>
+      <input type="text" name="Gender" id="Gender" value="Male"><br>
+      <label for="partial_paresis">Partial Paresis (1=Yes,0=No):</label>
+      <input type="number" name="partial_paresis" id="partial_paresis" value="0" min="0" max="1"><br>
+      <label for="sudden_weight_loss">Sudden Weight Loss (1=Yes,0=No):</label>
+      <input type="number" name="sudden_weight_loss" id="sudden_weight_loss" value="0" min="0" max="1"><br>
+      <label for="Irritability">Irritability (1=Yes,0=No):</label>
+      <input type="number" name="Irritability" id="Irritability" value="0" min="0" max="1"><br>
+      <label for="delayed_healing">Delayed Healing (1=Yes,0=No):</label>
+      <input type="number" name="delayed_healing" id="delayed_healing" value="0" min="0" max="1"><br>
+      <label for="Alopecia">Alopecia (1=Yes,0=No):</label>
+      <input type="number" name="Alopecia" id="Alopecia" value="0" min="0" max="1"><br>
+      <label for="Itching">Itching (1=Yes,0=No):</label>
+      <input type="number" name="Itching" id="Itching" value="0" min="0" max="1">
+    </fieldset>
+
+    <!-- Cirrhosis Parameters -->
+    <fieldset>
+      <legend>Cirrhosis Parameters</legend>
+      <label for="Bilirubin">Bilirubin:</label>
+      <input type="number" step="0.1" name="Bilirubin" id="Bilirubin" value="1.2"><br>
+      <label for="Albumin">Albumin:</label>
+      <input type="number" step="0.1" name="Albumin" id="Albumin" value="3.8"><br>
+      <label for="Copper">Copper:</label>
+      <input type="number" name="Copper" id="Copper" value="80"><br>
+      <label for="Alk_Phos">Alkaline Phosphatase (Alk_Phos):</label>
+      <input type="number" name="Alk_Phos" id="Alk_Phos" value="70"><br>
+      <label for="SGOT">SGOT:</label>
+      <input type="number" name="SGOT" id="SGOT" value="40"><br>
+      <label for="Tryglicerides">Tryglicerides:</label>
+      <input type="number" name="Tryglicerides" id="Tryglicerides" value="150"><br>
+      <label for="Platelets">Platelets:</label>
+      <input type="number" name="Platelets" id="Platelets" value="250"><br>
+      <label for="Prothrombin">Prothrombin:</label>
+      <input type="number" step="0.1" name="Prothrombin" id="Prothrombin" value="11"><br>
+      <label for="Stage">Stage:</label>
+      <input type="number" name="Stage" id="Stage" value="1"><br>
+      <label for="Ascites">Ascites (1=Yes,0=No):</label>
+      <input type="number" name="Ascites" id="Ascites" value="0" min="0" max="1"><br>
+      <label for="Hepatomegaly">Hepatomegaly (1=Yes,0=No):</label>
+      <input type="number" name="Hepatomegaly" id="Hepatomegaly" value="0" min="0" max="1"><br>
+      <label for="Spiders">Spiders (1=Yes,0=No):</label>
+      <input type="number" name="Spiders" id="Spiders" value="0" min="0" max="1"><br>
+      <label for="Edema">Edema (1=Yes,0=No):</label>
+      <input type="number" name="Edema" id="Edema" value="0" min="0" max="1">
+    </fieldset>
+
+    <!-- Hepatitis C Parameters -->
+    <fieldset>
+      <legend>Hepatitis C Parameters</legend>
+      <label for="ALB">ALB:</label>
+      <input type="number" step="0.1" name="ALB" id="ALB" value="4.0"><br>
+      <label for="ALP">ALP:</label>
+      <input type="number" name="ALP" id="ALP" value="70"><br>
+      <label for="ALT">ALT:</label>
+      <input type="number" name="ALT" id="ALT" value="45"><br>
+      <label for="AST">AST:</label>
+      <input type="number" name="AST" id="AST" value="38"><br>
+      <label for="BIL_hep">BIL (Hepatitis C):</label>
+      <input type="number" step="0.1" name="BIL_hep" id="BIL_hep" value="0.8"><br>
+      <label for="CHE">CHE:</label>
+      <input type="number" name="CHE" id="CHE" value="8000"><br>
+      <label for="CHOL_hep">CHOL (Hepatitis C):</label>
+      <input type="number" name="CHOL_hep" id="CHOL_hep" value="180"><br>
+      <label for="CREA">CREA:</label>
+      <input type="number" step="0.1" name="CREA" id="CREA" value="0.9"><br>
+      <label for="GGT">GGT:</label>
+      <input type="number" name="GGT" id="GGT" value="30"><br>
+      <label for="PROT_hep">PROT (Hepatitis C):</label>
+      <input type="number" step="0.1" name="PROT_hep" id="PROT_hep" value="7.0">
+    </fieldset>
+
+    <input type="submit" value="Predict">
+  </form>
+
+  {% if result %}
+  <div class="results">
+    <h2>Prediction Results</h2>
+    <ul>
+      {% for disease, info in result.items() %}
+        {% if disease != 'Overall Risk Score' %}
+          <li>
+            <strong>{{ disease }}:</strong>
+            Risk Level: {{ info.Risk }},
+            Probability: {{ (info.Probability * 100)|round(2) }}%
+          </li>
+        {% else %}
+          <li><strong>{{ disease }}:</strong> {{ (info * 100)|round(2) }}%</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+</body>
+</html>

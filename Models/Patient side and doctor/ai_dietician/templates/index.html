@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Diet Recommendation System</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+   <style>
+       /* static/style.css */
+
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+/* Page Container */
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Header */
+h1 {
+    text-align: center;
+    color: #007BFF;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Form Styles */
+form {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 6px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+    box-shadow: 0px 0px 6px rgba(0, 123, 255, 0.5);
+}
+
+/* Submit Button */
+button, .btn {
+    display: inline-block;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #007BFF, #0056b3);
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+button:hover, .btn:hover {
+    background: linear-gradient(135deg, #0056b3, #00408a);
+    transform: scale(1.05);
+}
+
+/* Anchor Button Styling */
+a.btn {
+    text-decoration: none;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #007BFF;
+    color: white;
+}
+
+td {
+    background: #f9f9f9;
+}
+
+/* Chart Section */
+.chart {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    button {
+        font-size: 0.9rem;
+    }
+}
+
+   </style>
+</head>
+<body>
+    <h1>Diet Recommendation System</h1>
+    <form method="post">
+        <label>Select your gender:</label>
+        <select name="user_gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select><br>
+
+        <label>Enter your height in cm:</label>
+        <input type="number" name="user_height" min="50" max="250" step="1" required><br>
+
+        <label>Enter your weight in kg:</label>
+        <input type="number" name="user_weight" min="10" max="300" step="1" required><br>
+
+        <label>Enter your age in years:</label>
+        <input type="number" name="user_age" min="1" max="120" step="1" required><br>
+
+        <label>Enter any allergies or diseases (comma separated):</label>
+        <input type="text" name="allergies_diseases"><br>
+
+        <label>Are you vegetarian or non-vegetarian?</label>
+        <select name="dietary_preference" required>
+            <option value="veg">veg</option>
+            <option value="non-veg">non-veg</option>
+        </select><br>
+
+        <label>How often do you exercise in a week? (0 to 5):</label>
+        <input type="number" name="activity_level" min="0" max="5" step="1" required><br>
+
+        <input type="submit" value="Generate Diet Chart">
+    </form>
+
+    {% if results %}
+    <h2>Results</h2>
+    <p><strong>Your BMI:</strong> {{ results.bmi }}</p>
+    <p><strong>Predicted Body Category:</strong> {{ results.body_category }}</p>
+    <p><strong>Initial Calorie Intake:</strong> {{ results.initial_calorie_intake }} kcal/day</p>
+    <p><strong>New Calorie Intake:</strong> {{ results.new_calorie_intake }} kcal/day</p>
+
+    <h3>Breakfast</h3>
+    <table>
+        <tr>
+            <th>Food Item</th>
+            <th>Quantity</th>
+            <th>Calories (kcal)</th>
+            <th>Protein (g)</th>
+            <th>Carbohydrates (g)</th>
+            <th>Fats (g)</th>
+        </tr>
+        {% for row in results.breakfast %}
+        <tr>
+            <td>{{ row['Food Item'] }}</td>
+            <td>{{ row['Quantity'] }}</td>
+            <td>{{ row['Calories (kcal)'] }}</td>
+            <td>{{ row['Protein (g)'] }}</td>
+            <td>{{ row['Carbohydrates(g)'] }}</td>
+            <td>{{ row['Fats (g)'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Total Calories: {{ results.breakfast_total_calories }} kcal</p>
+    <p>Total Protein: {{ results.breakfast_total_protein }} g</p>
+    <p>Total Carbohydrates: {{ results.breakfast_total_carbs }} g</p>
+    <p>Total Fats: {{ results.breakfast_total_fats }} g</p>
+
+    <h3>Lunch</h3>
+    <table>
+        <tr>
+            <th>Food Item</th>
+            <th>Quantity</th>
+            <th>Calories (kcal)</th>
+            <th>Protein (g)</th>
+            <th>Carbohydrates (g)</th>
+            <th>Fats (g)</th>
+        </tr>
+        {% for row in results.lunch %}
+        <tr>
+            <td>{{ row['Food Item'] }}</td>
+            <td>{{ row['Quantity'] }}</td>
+            <td>{{ row['Calories (kcal)'] }}</td>
+            <td>{{ row['Protein (g)'] }}</td>
+            <td>{{ row['Carbohydrates(g)'] }}</td>
+            <td>{{ row['Fats (g)'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Total Calories: {{ results.lunch_total_calories }} kcal</p>
+    <p>Total Protein: {{ results.lunch_total_protein }} g</p>
+    <p>Total Carbohydrates: {{ results.lunch_total_carbs }} g</p>
+    <p>Total Fats: {{ results.lunch_total_fats }} g</p>
+
+    <h3>Dinner</h3>
+    <table>
+        <tr>
+            <th>Food Item</th>
+            <th>Quantity</th>
+            <th>Calories (kcal)</th>
+            <th>Protein (g)</th>
+            <th>Carbohydrates (g)</th>
+            <th>Fats (g)</th>
+        </tr>
+        {% for row in results.dinner %}
+        <tr>
+            <td>{{ row['Food Item'] }}</td>
+            <td>{{ row['Quantity'] }}</td>
+            <td>{{ row['Calories (kcal)'] }}</td>
+            <td>{{ row['Protein (g)'] }}</td>
+            <td>{{ row['Carbohydrates(g)'] }}</td>
+            <td>{{ row['Fats (g)'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Total Calories: {{ results.dinner_total_calories }} kcal</p>
+    <p>Total Protein: {{ results.dinner_total_protein }} g</p>
+    <p>Total Carbohydrates: {{ results.dinner_total_carbs }} g</p>
+    <p>Total Fats: {{ results.dinner_total_fats }} g</p>
+
+    <h3>Timings</h3>
+    {% if results.age <= 18 or results.age >= 60 %}
+        <ul>
+            <li>Breakfast: 9 to 10 am</li>
+            <li>Lunch: 12 to 1 pm</li>
+            <li>Dinner: 7 to 8 pm</li>
+        </ul>
+    {% else %}
+        <ul>
+            <li>Breakfast: 7 to 8 am</li>
+            <li>Lunch: 1 to 2 pm</li>
+            <li>Dinner: 8 to 9 pm</li>
+        </ul>
+    {% endif %}
+
+    <div class="chart">
+        <h3>Calorie Distribution Chart</h3>
+        {{ results.calorie_chart | safe }}
+    </div>
+
+    <div class="chart">
+        <h3>Nutrient Distribution Chart</h3>
+        {{ results.nutrient_chart | safe }}
+    </div>
+    {% endif %}
+</body>
+</html>

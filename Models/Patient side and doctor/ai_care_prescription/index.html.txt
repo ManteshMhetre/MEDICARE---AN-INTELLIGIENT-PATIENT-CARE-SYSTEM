@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical Care Plan Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .upload-section {
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+    #uploadForm {
+      margin: 20px 0;
+    }
+    .results-container {
+      margin-top: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .loading {
+      text-align: center;
+      margin: 20px 0;
+      display: none;
+    }
+    .error {
+      color: #e74c3c;
+      padding: 10px;
+      background-color: #fde8e8;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    /* Print styles */
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      .container {
+        box-shadow: none;
+        padding: 20px;
+      }
+      .upload-section,
+      #uploadForm,
+      #loading,
+      #downloadPDF {
+        display: none !important;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        page-break-inside: avoid;
+      }
+      th, td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f0f0f0 !important;
+        -webkit-print-color-adjust: exact;
+      }
+      h3 {
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+    }
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .loading-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+        color: #2c3e50;
+        font-size: 18px;
+        margin-top: 15px;
+    }
+
+    .progress-steps {
+        margin-top: 15px;
+        text-align: left;
+    }
+
+    .step {
+        margin: 8px 0;
+        color: #666;
+    }
+
+    .step.active {
+        color: #3498db;
+        font-weight: bold;
+    }
+
+    .step.completed {
+        color: #2ecc71;
+    }
+
+    .care-plan-container {
+        margin-top: 30px;
+    }
+    
+    .table-responsive {
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .table thead {
+        background-color: #3498db;
+        color: white;
+    }
+    
+    .table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #e9ecef;
+    }
+    
+    h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+    }
+
+    td[contenteditable="true"] {
+        padding: 5px;
+        border: 1px solid #ffc107;
+        border-radius: 4px;
+    }
+
+    .edit-btn, .save-btn {
+        padding: 2px 8px;
+        margin: 0 2px;
+    }
+
+    .save-btn {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .edit-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .save-btn:hover {
+        background-color: #218838;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .notification-status {
+        border-left: 4px solid;
+    }
+    
+    .alert-success.notification-status {
+        border-left-color: #28a745;
+    }
+    
+    .alert-warning.notification-status {
+        border-left-color: #ffc107;
+    }
+    
+    .alert-danger.notification-status {
+        border-left-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <div class="loading-text">Processing your audio file...</div>
+        <div class="progress-steps">
+            <div class="step" id="step1">1. Uploading audio file...</div>
+            <div class="step" id="step2">2. Transcribing audio...</div>
+            <div class="step" id="step3">3. Generating care plan...</div>
+        </div>
+    </div>
+  </div>
+  <div class="container section">
+    <h1>Medical Care Plan Generator</h1>
+    <form id="uploadForm" class="mb-4">
+      <div class="mb-3">
+        <label for="audioFile" class="form-label">Upload Audio Recording</label>
+        <input type="file" id="audioFile" name="audio" accept="audio/*" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Generate Care Plan</button>
+    </form>
+    <div id="loading" class="loading">
+      Processing audio and generating care plan...
+    </div>
+    <div id="carePlanResult"></div>
+  </div>
+
+  <!-- Medication Timetable Section (from Gemini suggestions) -->
+  <div class="container section">
+    <h1>Generate Daily Timetables</h1>
+    <div id="medicationTableSection"></div>
+    <button id="generateTimetableBtn" class="btn btn-primary mt-3" style="display:none;">Generate Daily Timetables</button>
+    <div id="timetableResult" class="mt-4"></div>
+  </div>
+
+  <!-- Add this button after the timetable results -->
+  <div class="mt-4" id="downloadSection" style="display: none;">
+    <button id="downloadBtn" class="btn btn-success">
+      <i class="fas fa-download"></i> Download Schedule
+    </button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Add a variable to store the care plan data
+    let carePlanData = null;
+
+    function createTable(title, headers, data, editable = false) {
+        if (!data || data.length === 0) {
+            return `
+                <div class="mt-4">
+                    <h3>${title}</h3>
+                    <p class="text-muted">No data available</p>
+                </div>`;
+        }
+        
+        let html = <div class="mt-4"><h3>${title}</h3>;
+        html += '<div class="table-responsive">'; 
+        const tableId = (title === 'Set Frequency for Each Medication') ? ' id="geminiMedTable"' : '';
+        html += <table class="table table-bordered"${tableId}>;
+        html += '<thead class="table-primary"><tr>';
+        
+        headers.forEach(header => {
+            html += <th>${header}</th>;
+        });
+        
+        // Add Dosage column for medication table
+        if (title === 'Set Frequency for Each Medication') {
+            html += '<th>Dosage</th>';
+            html += '<th>Frequency per Day</th>';
+        }
+        
+        if (editable) {
+            html += '<th>Actions</th>';
+        }
+        
+        html += '</tr></thead><tbody>';
+        
+        data.forEach((row, index) => {
+            html += '<tr>';
+            headers.forEach(header => {
+                html += <td contenteditable="false">${row[header] || ''}</td>;
+            });
+            
+            // Add dosage field for medication table
+            if (title === 'Set Frequency for Each Medication') {
+                html += <td contenteditable="false"></td>; // Dosage field
+                html += `
+                    <td>
+                        <select class="form-select frequency-select">
+                            <option value="1">Once daily (Dinner)</option>
+                            <option value="2">Twice daily (Breakfast & Dinner)</option>
+                            <option value="3">Three times daily (Breakfast, Lunch & Dinner)</option>
+                        </select>
+                    </td>
+                `;
+            }
+            
+            if (editable) {
+                html += `
+                    <td>
+                        <button class="btn btn-sm btn-primary edit-btn" onclick="toggleEdit(this, '${title}', ${index})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-success save-btn" onclick="saveEdit(this, '${title}', ${index})" style="display:none;">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </td>
+                `;
+            }
+            
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table></div></div>';
+        return html;
+    }
+
+    function toggleEdit(button, title, index) {
+        const row = button.closest('tr');
+        const cells = row.querySelectorAll('td:not(:last-child)');
+        const editBtn = button;
+        const saveBtn = row.querySelector('.save-btn');
+
+        // Don't make frequency selector cell editable for medication table
+        const editableCells = title === 'Set Frequency for Each Medication' ? 
+            cells.slice(0, -1) : cells;
+
+        editableCells.forEach(cell => {
+            cell.contentEditable = "true";
+            cell.style.backgroundColor = "#fff3cd";
+        });
+
+        editBtn.style.display = "none";
+        saveBtn.style.display = "inline-block";
+    }
+
+    function saveEdit(button, title, index) {
+        const row = button.closest('tr');
+        const cells = row.querySelectorAll('td:not(:last-child)');
+        const editBtn = row.querySelector('.edit-btn');
+        const saveBtn = button;
+
+        // Don't process frequency selector cell for medication table
+        const editableCells = title === 'Set Frequency for Each Medication' ? 
+            cells.slice(0, -1) : cells;
+
+        editableCells.forEach(cell => {
+            cell.contentEditable = "false";
+            cell.style.backgroundColor = "";
+        });
+
+        editBtn.style.display = "inline-block";
+        saveBtn.style.display = "none";
+
+        // Update the carePlanData based on the edited values
+        if (title === 'Set Frequency for Each Medication') {
+            carePlanData.medication_schedule[index] = {
+                "Medication Name": cells[0].textContent.trim(),
+                "Dosage": cells[1].textContent.trim()
+            };
+        } else if (title === 'Meal Schedule') {
+            carePlanData.meal_schedule[index] = {
+                Time: cells[0].textContent.trim(),
+                Meal: cells[1].textContent.trim(),
+                Details: cells[2].textContent.trim()
+            };
+        } else if (title === 'Activity Schedule') {
+            carePlanData.activity_schedule[index] = {
+                Time: cells[0].textContent.trim(),
+                Activity: cells[1].textContent.trim(),
+                Duration: cells[2].textContent.trim(),
+                Notes: cells[3].textContent.trim()
+            };
+        }
+
+        // Regenerate timetables to reflect changes
+        document.getElementById('generateTimetableBtn').click();
+    }
+
+    function updateLoadingStep(stepNumber) {
+        // Reset all steps
+        document.querySelectorAll('.step').forEach(step => {
+            step.classList.remove('active', 'completed');
+        });
+        
+        // Mark completed steps
+        for (let i = 1; i < stepNumber; i++) {
+            document.getElementById(step${i}).classList.add('completed');
+        }
+        
+        // Mark current step as active
+        document.getElementById(step${stepNumber}).classList.add('active');
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('audioFile');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const resultDiv = document.getElementById('carePlanResult');
+        const medicationTableSection = document.getElementById('medicationTableSection');
+        
+        if (!fileInput.files.length) {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Please select an audio file</div>';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('audio', fileInput.files[0]);
+        
+        loadingOverlay.style.display = 'flex';
+        resultDiv.innerHTML = '';
+        medicationTableSection.innerHTML = '';
+        updateLoadingStep(1);
+
+        try {
+            // Step 1: Upload started
+            updateLoadingStep(1);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Show upload step
+
+            // Step 2: Transcription
+            updateLoadingStep(2);
+            const response = await fetch('/generate_care_plan', {
+                method: 'POST',
+                body: formData
+            });
+            
+            // Step 3: Generating plan
+            updateLoadingStep(3);
+            const data = await response.json();
+            
+            if (data.error) {
+                resultDiv.innerHTML = <div class="alert alert-danger">Error: ${data.error}</div>;
+            } else {
+                // Store the care plan data
+                carePlanData = data;
+                
+                // Create separate sections for each schedule
+                let carePlanHtml = '<div class="care-plan-container">';
+                
+                // Medication Schedule with edit option
+                carePlanHtml += createTable(
+                    'Medication Schedule',
+                    ['Medication Name'],
+                    data.medication_schedule,
+                    true
+                );
+                
+                // Meal Schedule with edit option
+                carePlanHtml += createTable(
+                    'Meal Schedule',
+                    ['Time', 'Meal', 'Details'],
+                    data.meal_schedule,
+                    true
+                );
+                
+                // Activity Schedule with edit option
+                carePlanHtml += createTable(
+                    'Activity Schedule',
+                    ['Time', 'Activity', 'Duration', 'Notes'],
+                    data.activity_schedule,
+                    true
+                );
+                
+                carePlanHtml += '</div>';
+                resultDiv.innerHTML = carePlanHtml;
+
+                // Create medication table in the separate section
+                medicationTableSection.innerHTML = createTable(
+                    'Set Frequency for Each Medication',
+                    ['Medication Name'],
+                    data.medication_schedule
+                );
+                
+                document.getElementById('generateTimetableBtn').style.display = "block";
+                document.getElementById('timetableResult').innerHTML = ''; // Clear previous results
+            }
+        } catch (error) {
+            resultDiv.innerHTML = <div class="alert alert-danger">Error: ${error.message}</div>;
+        } finally {
+            loadingOverlay.style.display = 'none';
+        }
+    });
+
+    // Add this function to show notification status
+    function showNotificationStatus(message, type = 'success') {
+        const statusDiv = document.createElement('div');
+        statusDiv.className = alert alert-${type} notification-status;
+        statusDiv.style.position = 'fixed';
+        statusDiv.style.top = '20px';
+        statusDiv.style.right = '20px';
+        statusDiv.style.zIndex = '1000';
+        statusDiv.style.maxWidth = '300px';
+        statusDiv.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        statusDiv.style.animation = 'slideIn 0.5s ease-out';
+        
+        statusDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas ${type === 'success' ? 'fa-bell' : 'fa-exclamation-circle'} me-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(statusDiv);
+        
+        // Remove the notification after 5 seconds
+        setTimeout(() => {
+            statusDiv.style.animation = 'slideOut 0.5s ease-in';
+            setTimeout(() => statusDiv.remove(), 500);
+        }, 5000);
+    }
+
+    // Update the Generate Timetable button click handler
+    document.getElementById('generateTimetableBtn').addEventListener('click', async function() {
+        if (!carePlanData) {
+            alert("Please generate a care plan first.");
+            return;
+        }
+
+        const table = document.getElementById('geminiMedTable');
+        if (!table) {
+            alert("Please generate a care plan first to see medications.");
+            return;
+        }
+
+        const rows = table.querySelectorAll('tbody tr');
+        if (!rows || rows.length === 0) {
+            alert("No medications found. Please generate a care plan first.");
+            return;
+        }
+
+        let medicines = [];
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const medication_name = cells[0].textContent.trim();
+            const frequency = row.querySelector('.frequency-select').value;
+            medicines.push({ 
+                medication_name,
+                frequency 
+            });
+        });
+
+        const timetableResult = document.getElementById('timetableResult');
+        timetableResult.innerHTML = '<div class="alert alert-info">Generating timetables...</div>';
+
+        try {
+            const response = await fetch('/generate_schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    medicines,
+                    meal_schedule: carePlanData.meal_schedule,
+                    activity_schedule: carePlanData.activity_schedule
+                })
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                showNotificationStatus(data.error, 'danger');
+                timetableResult.innerHTML = <div class="alert alert-danger">Error: ${data.error}</div>;
+                return;
+            }
+
+            // Update medication schedule in carePlanData
+            carePlanData.medication_schedule = data.schedule_list;
+
+            // Generate all timetables
+            generateAllTimetables(data);
+
+            // Show download button
+            document.getElementById('downloadSection').style.display = 'block';
+
+            // Show notification status
+            if (data.notifications_scheduled) {
+                showNotificationStatus('WhatsApp reminders have been scheduled for all activities! You will receive notifications at the scheduled times.', 'success');
+                
+                // Add a small indicator in the timetable section
+                const reminderInfo = `
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i> Reminder notifications are set for:
+                        <ul class="mb-0 mt-2">
+                            <li>Medications - at scheduled times</li>
+                            <li>Meals - at meal times</li>
+                            <li>Activities - at activity times</li>
+                        </ul>
+                    </div>
+                `;
+                timetableResult.insertAdjacentHTML('afterbegin', reminderInfo);
+            }
+
+        } catch (err) {
+            showNotificationStatus('Error generating timetables: ' + err.message, 'danger');
+            timetableResult.innerHTML = <div class="alert alert-danger">Error generating timetables: ${err.message}</div>;
+        }
+    });
+
+    function generateAllTimetables(data) {
+        const timetableResult = document.getElementById('timetableResult');
+        
+        // Generate medication timetable
+        const groupedSchedule = data.schedule_list.reduce((acc, item) => {
+            const key = ${item['Scheduled Time']} - ${item['Meal']};
+            if (!acc[key]) {
+                acc[key] = {
+                    time: item['Scheduled Time'],
+                    meal: item['Meal'],
+                    medications: []
+                };
+            }
+            acc[key].medications.push(item['Medication Name']);
+            return acc;
+        }, {});
+
+        const sortedSchedule = Object.values(groupedSchedule).sort((a, b) => {
+            const timeA = new Date('1970/01/01 ' + a.time);
+            const timeB = new Date('1970/01/01 ' + b.time);
+            return timeA - timeB;
+        });
+
+        let tableHTML = `
+            <div class="mt-4">
+                <h3>Daily Medication Timetable</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Time</th>
+                                <th>Meal</th>
+                                <th>Medications</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        sortedSchedule.forEach(item => {
+            tableHTML += `
+                <tr>
+                    <td>${item.time}</td>
+                    <td>${item.meal}</td>
+                    <td>${item.medications.join(', ')}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += '</tbody></table></div></div>';
+        timetableResult.innerHTML = tableHTML;
+
+        // Generate meal and activity timetables
+        generateMealAndActivityTimetables(carePlanData);
+    }
+
+    function generateMealAndActivityTimetables(data) {
+        if (!data || !data.meal_schedule || !data.activity_schedule) {
+            console.error('Missing meal or activity schedule data');
+            return;
+        }
+
+        // Sort meal schedule by time
+        const sortedMeals = [...data.meal_schedule].sort((a, b) => {
+            const timeA = new Date('1970/01/01 ' + a.Time);
+            const timeB = new Date('1970/01/01 ' + b.Time);
+            return timeA - timeB;
+        });
+
+        let mealTableHTML = `
+            <div class="mt-4">
+                <h3>Daily Meal Timetable</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Time</th>
+                                <th>Meal</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        sortedMeals.forEach(item => {
+            mealTableHTML += `
+                <tr>
+                    <td>${item.Time}</td>
+                    <td>${item.Meal}</td>
+                    <td>${item.Details || ''}</td>
+                </tr>
+            `;
+        });
+
+        mealTableHTML += '</tbody></table></div></div>';
+        document.getElementById('timetableResult').innerHTML += mealTableHTML;
+
+        // Sort activity schedule by time
+        const sortedActivities = [...data.activity_schedule].sort((a, b) => {
+            const timeA = new Date('1970/01/01 ' + a.Time);
+            const timeB = new Date('1970/01/01 ' + b.Time);
+            return timeA - timeB;
+        });
+
+        let activityTableHTML = `
+            <div class="mt-4">
+                <h3>Daily Activity Timetable</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Time</th>
+                                <th>Activity</th>
+                                <th>Duration</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        sortedActivities.forEach(item => {
+            activityTableHTML += `
+                <tr>
+                    <td>${item.Time}</td>
+                    <td>${item.Activity}</td>
+                    <td>${item.Duration || ''}</td>
+                    <td>${item.Notes || ''}</td>
+                </tr>
+            `;
+        });
+
+        activityTableHTML += '</tbody></table></div></div>';
+        document.getElementById('timetableResult').innerHTML += activityTableHTML;
+    }
+
+    // Update the download button handler
+    document.getElementById('downloadBtn').addEventListener('click', async function() {
+        try {
+            // Create the schedule data structure
+            const scheduleData = {
+                medication_schedule: carePlanData.medication_schedule.map(med => ({
+                    "Time": med.Scheduled_Time || med["Scheduled Time"],
+                    "Medication Name": med["Medication Name"],
+                    "Meal": med.Meal
+                })),
+                meal_schedule: carePlanData.meal_schedule,
+                activity_schedule: carePlanData.activity_schedule
+            };
+
+            const response = await fetch('/download_schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(scheduleData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to download schedule');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'daily_schedule.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        } catch (error) {
+            console.error('Download error:', error);
+            alert('Error downloading schedule: ' + error.message);
+        }
+    });
+  </script>
+</body>
+</html>

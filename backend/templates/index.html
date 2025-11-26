@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Care Bot</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Medical Image Analysis</h1>
+        <form method="POST" enctype="multipart/form-data" action="/upload">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Analyze</button>
+        </form>
+        <p class="disclaimer">Note: This is not a substitute for professional medical advice. Always consult a doctor.</p>
+    </div>
+</body>
+</html>

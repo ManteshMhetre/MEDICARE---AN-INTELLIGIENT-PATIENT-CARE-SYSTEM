@@ -1,0 +1,6 @@
+streamlit
+google
+pillow==11.1.0
+plotly==6.0.0
+python-dotenv
+setuptools

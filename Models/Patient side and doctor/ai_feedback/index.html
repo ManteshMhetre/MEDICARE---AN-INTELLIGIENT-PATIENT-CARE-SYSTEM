@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Care Plan Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --light-blue: #e7f1ff;
+      --dark-blue: #0a58ca;
+      --bg-light: #f8f9fa;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .navbar {
+      background-color: var(--primary-blue);
+      padding: 1rem;
+    }
+
+    .navbar-brand {
+      color: white !important;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin-top: 30px;
+    }
+
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      background-color: var(--light-blue);
+      border-radius: 15px 15px 0 0;
+      border-bottom: none;
+      padding: 1.5rem;
+    }
+
+    .form-control {
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+      padding: 0.8rem;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-blue);
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--dark-blue);
+    }
+
+    /* Updated Care Plan Output Styling */
+    #updatedPlan {
+      white-space: pre-wrap;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 4px solid var(--primary-blue);
+      font-size: 1rem;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    #updatedPlan.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .role-switcher {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+
+    .emergency-alert {
+      background-color: #dc3545;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    /* Loading Spinner Styles */
+    #loadingIndicator {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a class="navbar-brand" href="#">Care Plan Management System</a>
+      <div class="role-switcher">
+        <select class="form-select" id="roleSelect" onchange="switchRole()">
+          <option value="patient">Patient View</option>
+          <option value="doctor">Doctor View</option>
+        </select>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Patient View -->
+    <div id="patientView">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">Patient Feedback Form</h3>
+        </div>
+        <div class="card-body">
+          <form id="feedbackForm" class="mb-4">
+            <div class="mb-3">
+              <label for="feedback" class="form-label">Current Symptoms and Feedback</label>
+              <textarea class="form-control" id="feedback" name="feedback" rows="4" placeholder="Please describe your current symptoms and how you're feeling..." required></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="care_plan_pdf" class="form-label">Upload Current Care Plan (PDF)</label>
+              <input type="file" class="form-control" id="care_plan_pdf" name="care_plan_pdf" accept=".pdf" />
+              <div class="form-text">Optional: Upload your current care plan in PDF format</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+          </form>
+          <!-- Loading Indicator -->
+          <div id="loadingIndicator">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Generating updated care plan...</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="responseSection" class="card d-none">
+        <div class="card-header">
+          <h3 class="mb-0">Updated Care Plan</h3>
+        </div>
+        <div class="card-body">
+          <div id="updatedPlan"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Doctor View -->
+    <div id="doctorView" style="display: none;">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="mb-0">Emergency Notifications</h3>
+        </div>
+        <div class="card-body">
+          <div id="emergencyNotifications"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRole = 'patient';
+
+    function switchRole() {
+      const role = document.getElementById('roleSelect').value;
+      if (role === 'doctor') {
+        window.location.href = '/doctor_dashboard';
+      }
+
+      // Update server-side role
+      fetch('/switch_role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `role=${role}`
+      });
+    }
+
+    async function fetchEmergencyNotifications() {
+      try {
+        const response = await fetch('/get_emergency_notifications');
+        const data = await response.json();
+
+        if (data.success) {
+          const notificationsDiv = document.getElementById('emergencyNotifications');
+          notificationsDiv.innerHTML = '';
+
+          data.notifications.forEach(notification => {
+            const notificationElement = document.createElement('div');
+            notificationElement.className = 'emergency-alert';
+            notificationElement.innerHTML = `
+              <h4>Emergency Alert</h4>
+              <p>Time: ${notification.timestamp}</p>
+              <p>Patient Feedback: ${notification.patient_feedback}</p>
+            `;
+            notificationsDiv.appendChild(notificationElement);
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Show loading indicator
+      document.getElementById('loadingIndicator').style.display = 'block';
+      document.getElementById('responseSection').classList.add('d-none');
+
+      const formData = new FormData(e.target);
+
+      try {
+        const response = await fetch('/submit_feedback', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        // Hide loading indicator
+        document.getElementById('loadingIndicator').style.display = 'none';
+
+        if (data.success) {
+          const updatedPlanDiv = document.getElementById('updatedPlan');
+          updatedPlanDiv.textContent = data.updated_plan;
+          // Add animation effect
+          setTimeout(() => {
+            updatedPlanDiv.classList.add('visible');
+          }, 50);
+          document.getElementById('responseSection').classList.remove('d-none');
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (error) {
+        document.getElementById('loadingIndicator').style.display = 'none';
+        alert('Error submitting feedback: ' + error);
+      }
+    });
+
+    // Poll for emergency notifications when in doctor view
+    setInterval(() => {
+      if (currentRole === 'doctor') {
+        fetchEmergencyNotifications();
+      }
+    }, 30000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide the default "reveal" icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-outer-spin-button,
+input[type="password"]::-webkit-appearance {
+  display: none;
+}
+
+::-webkit-scrollbar {
+  width: 0.6vw;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #B0BBD8;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #7584AE;
+  border-radius: 100px;
+}
+ 
+::-webkit-scrollbar-thumb:hover {
+  background-color: #6575A5;
+}
+
+::selection {
+  background-color: #515E84;
+  color: #fff;
+}
+
+::-moz-selection {
+  background-color: #515E84;
+  color: #fff;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #7584AE, #B0BBD8;
+}
+@media (max-width: 479.98px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  background-color: #f5f5f5;
+  color: "#B0BBD8";
+}
+
+section {
+  position: relative;
+  overflow: hidden;
+}
+
+input,
+button,
+textarea {
+  line-height: 1;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  background-color: transparent;
+}
+
+input[type="checkbox"],
+input[type="range"] {
+  accent-color: #4A4CB2;
+}
+
+button {
+  cursor: pointer;
+}
+
+textarea {
+  resize: vertical;
+}
+
+ul {
+  list-style-type: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+img,
+svg {
+  vertical-align: middle;
+  user-select: none;
+}
+
+del {
+  color: #7584AE;
+}

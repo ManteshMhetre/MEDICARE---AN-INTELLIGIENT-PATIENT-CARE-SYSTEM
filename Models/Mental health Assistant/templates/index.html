@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Driven Mental Health Assessment</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f0f8ff, #e0f7fa);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .header {
+      background-color: #007BFF;
+      color: #fff;
+      text-align: center;
+      padding: 30px 20px;
+      font-size: 3em;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .chat-container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      min-height: 500px;
+      overflow-y: auto;
+    }
+    .message-wrapper {
+      display: flex;
+      margin-bottom: 15px;
+      align-items: flex-end;
+    }
+    .message-wrapper.user {
+      justify-content: flex-end;
+    }
+    .message-wrapper.bot {
+      justify-content: flex-start;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin: 0 10px;
+      transition: transform 0.2s ease;
+    }
+    .avatar:hover {
+      transform: scale(1.1);
+    }
+    .message {
+      max-width: 60%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      position: relative;
+      animation: fadeIn 0.5s ease-in-out;
+      line-height: 1.4;
+      transition: background-color 0.3s ease;
+    }
+    .message.user {
+      background-color: #cce5ff;
+      text-align: right;
+    }
+    .message.bot {
+      background-color: #d4edda;
+      text-align: left;
+    }
+    .message:hover {
+      background-color: #f0f0f0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .input-container {
+      display: flex;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .input-container input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 2px solid #007BFF;
+      border-radius: 10px;
+      font-size: 1em;
+      outline: none;
+      transition: border 0.3s ease;
+    }
+    .input-container input:focus {
+      border-color: #0056b3;
+    }
+    .input-container button {
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-left: 15px;
+      border-radius: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .input-container button:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">AI Driven Mental Health Assessment</div>
+  <div class="chat-container" id="chat">
+    <!-- Chat messages will appear here -->
+  </div>
+  <div class="input-container">
+    <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    // Append a new message to the chat container with avatars
+    function appendMessage(sender, text) {
+      const chat = document.getElementById('chat');
+
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = 'message-wrapper ' + sender;
+
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
+      // External images for avatars (using free icons from Icons8)
+      avatar.src = sender === 'user'
+        ? 'https://img.icons8.com/color/48/000000/user.png'
+        : 'https://img.icons8.com/color/48/000000/artificial-intelligence.png';
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message ' + sender;
+      // Use innerHTML for bot messages to allow line breaks
+      if (sender === 'bot') {
+        messageDiv.innerHTML = text;
+      } else {
+        messageDiv.textContent = text;
+      }
+
+      if (sender === 'bot') {
+        messageWrapper.appendChild(avatar);
+        messageWrapper.appendChild(messageDiv);
+      } else {
+        messageWrapper.appendChild(messageDiv);
+        messageWrapper.appendChild(avatar);
+      }
+
+      chat.appendChild(messageWrapper);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Send the user message to the backend and handle the response
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (text === "") return;
+      appendMessage('user', "You: " + text);
+      input.value = "";
+
+      fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+      })
+      .then(response => response.json())
+      .then(data => {
+          // Using <br> for a line break between emotion and suggestion
+          const botMessage = "Detected Emotion: " + data.label + "<br>Suggestion: " + data.suggestion;
+          appendMessage('bot', botMessage);
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+    }
+
+    // Allow sending the message with the Enter key
+    document.getElementById("userInput").addEventListener("keyup", function(event) {
+      if (event.key === "Enter") {
+          sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>

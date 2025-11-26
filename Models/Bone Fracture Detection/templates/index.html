@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bone Fracture Detection</title>
+  <!-- Bootstrap CSS -->
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+  />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #333;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 500px;
+      margin-top: 50px;
+    }
+    .card {
+      background-color: #444;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+    .card-header {
+      background-color: #444;
+      border-bottom: none;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      position: relative;
+    }
+    .info-icon {
+      position: absolute;
+      top: 50%;
+      right: 1rem;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: #aaa;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .info-icon:hover {
+      color: #fff;
+    }
+    .card-body {
+      text-align: center;
+    }
+    .btn-custom {
+      background-color: #1e90ff;
+      color: #fff;
+      border: none;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+    .btn-custom:hover {
+      background-color: #4682b4;
+      transform: scale(1.03);
+    }
+    .preview-container {
+      margin: 20px auto;
+      max-width: 250px;
+    }
+    .preview-img {
+      width: 100%;
+      border: 2px solid #555;
+      border-radius: 8px;
+      display: none; /* Hidden until an image is selected */
+    }
+    .result-text {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .result-text span {
+      color: #1ee188; /* Green for "Not Fractured" by default */
+    }
+    .fractured {
+      color: #ff4c4c; /* Red if fractured */
+    }
+    .footer-note {
+      color: #ccc;
+      font-size: 0.9rem;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .card-footer {
+      background-color: #444;
+      border-top: none;
+      text-align: center;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card mx-auto">
+      <div class="card-header">
+        Bone Fracture Detection
+        <i
+          class="info-icon"
+          title="Bone fracture detection system, upload an X-ray image to detect fracture."
+          >&#9432;</i
+        >
+      </div>
+      <div class="card-body">
+        <p class="mb-4">
+          Bone fracture detection system, upload an X-ray image for detection.
+        </p>
+        <!-- Upload Form -->
+        <form method="POST" action="/" enctype="multipart/form-data">
+          <div class="form-group">
+            <input
+              type="file"
+              name="image_file"
+              id="image_file"
+              class="form-control-file"
+              accept="image/*"
+              onchange="previewFile()"
+              required
+            />
+          </div>
+          <!-- Preview Container -->
+          <div class="preview-container">
+            <img
+              id="preview-img"
+              class="preview-img"
+              alt="Selected Image Preview"
+            />
+          </div>
+          <button type="submit" class="btn btn-custom btn-block mt-3">
+            Predict
+          </button>
+        </form>
+
+        <!-- Display uploaded image and result if any -->
+        {% if uploaded_image %}
+          <div class="mt-3">
+            <img
+              src="{{ url_for('static', filename='uploads/' ~ uploaded_image) }}"
+              alt="Uploaded X-ray"
+              class="preview-img"
+              style="display:block;"
+            />
+          </div>
+        {% endif %}
+        {% if prediction %}
+          <p class="result-text">
+            Result:
+            {% if prediction == 'Fractured' %}
+              <span class="fractured">Fractured</span>
+            {% else %}
+              <span>Not Fractured</span>
+            {% endif %}
+          </p>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <small class="footer-note">
+          &copy; 2025 Bone Fracture Detection. All rights reserved.
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery and Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <!-- Preview selected image in the browser before submission -->
+  <script>
+    function previewFile() {
+      const preview = document.getElementById('preview-img');
+      const file = document.getElementById('image_file').files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+          preview.src = reader.result;
+          preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

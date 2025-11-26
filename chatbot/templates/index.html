@@ -1,0 +1,37 @@
+<!-- In index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Care Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Medical Image Analysis</h1>
+        </div>
+
+        <div class="upload-card">
+            <form class="upload-form" method="POST" enctype="multipart/form-data" action="/chatbot/upload">
+                <div class="file-input-wrapper">
+                    <input type="file" class="file-input" name="file" accept="image/*" required>
+                    <div class="file-label"><i class="fas fa-file-upload"></i> Choose or Drag Image</div>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-microscope"></i> Analyze Image
+                </button>
+            </form>
+        </div>
+
+        <p class="disclaimer">
+            <i class="fas fa-exclamation-triangle"></i>
+            Note: This is not a substitute for professional medical advice. Always consult a doctor.
+        </p>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

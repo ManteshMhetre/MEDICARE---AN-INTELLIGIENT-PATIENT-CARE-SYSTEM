@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Heart Disease Prediction</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-in {
+        animation: fadeIn 0.8s ease-out;
+      }
+    </style>
+  </head>
+  <body class="bg-white">
+    <div
+      class="max-w-3xl mx-auto p-10 mt-12 bg-gradient-to-r from-white to-blue-50 shadow-2xl rounded-lg fade-in border border-gray-200"
+    >
+      <!-- Page Title -->
+      <h1 class="text-4xl font-bold text-center mb-8 text-blue-700">
+        Heart Disease Prediction
+      </h1>
+
+      <!-- Prediction Form -->
+      <form action="/predict" method="post" class="space-y-6">
+        <!-- Age -->
+        <div>
+          <label for="age" class="block text-lg font-medium text-gray-800">
+            Age (years)
+          </label>
+          <input
+            type="number"
+            step="any"
+            name="age"
+            id="age"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Sex -->
+        <div>
+          <label for="sex" class="block text-lg font-medium text-gray-800">
+            Sex
+          </label>
+          <select
+            name="sex"
+            id="sex"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+
+        <!-- Chest Pain Type -->
+        <div>
+          <label
+            for="chest_pain_type"
+            class="block text-lg font-medium text-gray-800"
+          >
+            Chest Pain Type
+          </label>
+          <select
+            name="chest_pain_type"
+            id="chest_pain_type"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>Typical Angina</option>
+            <option>Atypical Angina</option>
+            <option>Non-anginal Pain</option>
+            <option>Asymptomatic</option>
+          </select>
+        </div>
+
+        <!-- Resting Blood Pressure -->
+        <div>
+          <label
+            for="resting_bp"
+            class="block text-lg font-medium text-gray-800"
+          >
+            Resting Blood Pressure (mm Hg)
+          </label>
+          <input
+            type="number"
+            step="any"
+            name="resting_bp"
+            id="resting_bp"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Cholestoral -->
+        <div>
+          <label
+            for="cholestoral"
+            class="block text-lg font-medium text-gray-800"
+          >
+            Cholestoral (mg/dl)
+          </label>
+          <input
+            type="number"
+            step="any"
+            name="cholestoral"
+            id="cholestoral"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Fasting Blood Sugar -->
+        <div>
+          <label
+            for="fasting_blood_sugar"
+            class="block text-lg font-medium text-gray-800"
+          >
+            Fasting Blood Sugar > 120 mg/dl?
+          </label>
+          <select
+            name="fasting_blood_sugar"
+            id="fasting_blood_sugar"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>No</option>
+            <option>Yes</option>
+          </select>
+        </div>
+
+        <!-- Restecg -->
+        <div>
+          <label for="restecg" class="block text-lg font-medium text-gray-800">
+            Restecg
+          </label>
+          <select
+            name="restecg"
+            id="restecg"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>Normal</option>
+            <option>ST-T Wave Abnormality</option>
+            <option>Left Ventricular Hypertrophy</option>
+          </select>
+        </div>
+
+        <!-- Maximum Heart Rate -->
+        <div>
+          <label for="max_hr" class="block text-lg font-medium text-gray-800">
+            Maximum Heart Rate Achieved
+          </label>
+          <input
+            type="number"
+            step="any"
+            name="max_hr"
+            id="max_hr"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Exercise-induced Angina -->
+        <div>
+          <label for="exang" class="block text-lg font-medium text-gray-800">
+            Exercise-induced Angina
+          </label>
+          <select
+            name="exang"
+            id="exang"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>No</option>
+            <option>Yes</option>
+          </select>
+        </div>
+
+        <!-- Oldpeak -->
+        <div>
+          <label for="oldpeak" class="block text-lg font-medium text-gray-800">
+            Oldpeak (ST depression)
+          </label>
+          <input
+            type="number"
+            step="any"
+            name="oldpeak"
+            id="oldpeak"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Slope -->
+        <div>
+          <label for="slope" class="block text-lg font-medium text-gray-800">
+            Slope of Peak Exercise ST Segment
+          </label>
+          <select
+            name="slope"
+            id="slope"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>Upsloping</option>
+            <option>Flat</option>
+            <option>Downsloping</option>
+          </select>
+        </div>
+
+        <!-- Number of Major Vessels -->
+        <div>
+          <label for="num_major_vessels" class="block text-lg font-medium text-gray-800">
+            Number of Major Vessels (0-3)
+          </label>
+          <select
+            name="num_major_vessels"
+            id="num_major_vessels"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+          </select>
+        </div>
+
+        <!-- Thal -->
+        <div>
+          <label for="thal" class="block text-lg font-medium text-gray-800">
+            Thalassemia
+          </label>
+          <select
+            name="thal"
+            id="thal"
+            class="mt-2 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option>Normal</option>
+            <option>Fixed Defect</option>
+            <option>Reversible Defect</option>
+          </select>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white py-3 px-4 rounded-md text-xl font-semibold hover:bg-blue-700 transform hover:scale-105 transition duration-300 ease-in-out"
+        >
+          Predict Heart Disease
+        </button>
+      </form>
+
+      <!-- Prediction output below the form -->
+      {% if prediction_text %}
+        <div
+          class="mt-8 p-6 bg-gradient-to-r from-green-100 to-green-50 border border-green-400 text-green-700 rounded text-center transform hover:scale-105 transition duration-300 ease-in-out"
+        >
+          <p class="text-2xl font-bold">{{ prediction_text }}</p>
+        </div>
+      {% endif %}
+
+      <!-- Gauge charts output below the prediction -->
+      {% if gauge_html %}
+        <div class="mt-8 fade-in bg-white p-6 rounded-lg shadow-lg border border-gray-100">
+          <h2 class="text-2xl font-bold text-center mb-4 text-gray-800">
+            Statistics of Input Parameters
+          </h2>
+          <!-- Gauge charts HTML injected from app.py -->
+          {{ gauge_html|safe }}
+        </div>
+      {% endif %}
+    </div>
+  </body>
+</html>

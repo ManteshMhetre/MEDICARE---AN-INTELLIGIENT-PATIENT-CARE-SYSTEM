@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sleep Quality Prediction</title>
+  <style>
+    /* Global reset for uniformity */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    /* CSS Variables for consistency */
+    :root {
+      --primary-color: #1e90ff;
+      --secondary-color: #4682b4;
+      --bg-color: #ffffff;
+      --text-color: #333;
+      --btn-bg: #1e90ff;
+      --btn-bg-hover: #4682b4;
+      --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    /* Body styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #ffffff, #e0f7fa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    /* Container styling */
+    .container {
+      background: var(--bg-color);
+      border-radius: 12px;
+      box-shadow: var(--box-shadow);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px 30px;
+      animation: fadeInUp 1s ease-out;
+      margin: auto;
+    }
+    /* Heading styling */
+    h1 {
+      font-size: 2.75rem;
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+      animation: slideDown 0.8s ease-out;
+    }
+    /* Form styling */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-weight: bold;
+      color: var(--text-color);
+      margin-bottom: 8px;
+    }
+    input, select {
+      padding: 12px 15px;
+      border: 2px solid var(--primary-color);
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    input:focus, select:focus {
+      border-color: var(--secondary-color);
+      transform: scale(1.02);
+      outline: none;
+    }
+    .btn {
+      background-color: var(--btn-bg);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      font-size: 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+      align-self: center;
+      width: 100%;
+      max-width: 200px;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background-color: var(--btn-bg-hover);
+      transform: scale(1.05);
+    }
+    /* Results card styling */
+    .results-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+      background: #f9f9f9;
+      text-align: center;
+    }
+    /* Gauge chart container */
+    #gaugeContainer {
+      position: relative;
+      width: 220px;
+      height: 150px; /* Increased height for visible text */
+      margin: 20px auto 0;
+    }
+    /* Animations */
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sleep Quality Prediction</h1>
+    <form method="POST" action="/">
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender">
+          <option>Male</option>
+          <option>Female</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="age">Age</label>
+        <input type="number" id="age" name="age" min="0" max="150" value="30" required>
+      </div>
+      <div class="form-group">
+        <label for="occupation">Occupation</label>
+        <select id="occupation" name="occupation">
+          <option>Software Engineer</option>
+          <option>Doctor</option>
+          <option>Sales Representative</option>
+          <option>Teacher</option>
+          <option>Nurse</option>
+          <option>Engineer</option>
+          <option>Accountant</option>
+          <option>Scientist</option>
+          <option>Lawyer</option>
+          <option>Salesperson</option>
+          <option>Manager</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="physical_activity">Physical Activity Level (minutes per day)</label>
+        <input type="number" id="physical_activity" name="physical_activity" min="0" max="240" value="60" required>
+      </div>
+      <div class="form-group">
+        <label for="stress_level">Stress Level (1-10)</label>
+        <input type="number" id="stress_level" name="stress_level" min="1" max="10" value="5" required>
+      </div>
+      <div class="form-group">
+        <label for="bmi_category">BMI Category</label>
+        <select id="bmi_category" name="bmi_category">
+          <option>Overweight</option>
+          <option>Normal</option>
+          <option>Obese</option>
+          <option>Normal Weight</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="blood_pressure">Blood Pressure (Systolic/Diastolic)</label>
+        <input type="text" id="blood_pressure" name="blood_pressure" value="130/85" required>
+      </div>
+      <div class="form-group">
+        <label for="heart_rate">Heart Rate</label>
+        <input type="number" id="heart_rate" name="heart_rate" min="40" max="200" value="78" required>
+      </div>
+      <div class="form-group">
+        <label for="daily_steps">Daily Steps</label>
+        <input type="number" id="daily_steps" name="daily_steps" value="10000" required>
+      </div>
+      <div class="form-group">
+        <label for="sleep_disorder">Sleep Disorder</label>
+        <select id="sleep_disorder" name="sleep_disorder">
+          <option>No disorder</option>
+          <option>Sleep Apnea</option>
+          <option>Insomnia</option>
+        </select>
+      </div>
+      <button type="submit" class="btn">Predict</button>
+    </form>
+
+    {% if sleep_duration is not none and sleep_quality is not none %}
+      <div class="results-card">
+        <h2>Prediction Results</h2>
+        <p><strong>Predicted Sleep Duration:</strong> {{ sleep_duration }} hours</p>
+        <p><strong>Sleep Quality Score:</strong> {{ sleep_quality }} / 10</p>
+        <p><strong>Quality Category:</strong> {{ quality_category }}</p>
+        <div id="gaugeContainer">
+          <canvas id="gauge" width="220" height="150"></canvas>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- JavaScript for Gauge Chart -->
+  <script>
+    function drawGauge(category) {
+      var canvas = document.getElementById("gauge");
+      if (!canvas.getContext) return;
+      var ctx = canvas.getContext("2d");
+      var centerX = canvas.width / 2;
+      var centerY = canvas.height - 10; // Slightly above the bottom edge
+      var radius = 80;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Determine gauge color based on category
+      var gaugeColor = "#dc3545"; // Low (red) by default
+      if (category === "High") {
+        gaugeColor = "#28a745";
+      } else if (category === "Medium") {
+        gaugeColor = "#ffc107";
+      }
+
+      // Draw background semicircle
+      ctx.beginPath();
+      ctx.lineWidth = 20;
+      ctx.strokeStyle = "#eee";
+      ctx.arc(centerX, centerY, radius, Math.PI, 0, false);
+      ctx.stroke();
+
+      // Draw colored semicircle (full gauge)
+      ctx.beginPath();
+      ctx.lineWidth = 20;
+      ctx.strokeStyle = gaugeColor;
+      ctx.arc(centerX, centerY, radius, Math.PI, 0, false);
+      ctx.stroke();
+
+      // Draw the category text in the arc's middle (using the midpoint of the semicircle)
+      var textY = centerY - radius/2;
+      ctx.font = "bold 24px Arial";
+      ctx.fillStyle = gaugeColor;
+      ctx.textAlign = "center";
+      ctx.fillText(category, centerX, textY);
+    }
+
+    {% if quality_category is not none %}
+      drawGauge("{{ quality_category }}");
+    {% endif %}
+  </script>
+</body>
+</html>
